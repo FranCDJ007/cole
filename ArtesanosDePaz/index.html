@@ -1,1 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artesanos de PAZ día a día</title>
+    
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Carga de React y ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Carga de Babel para procesar JSX en el navegador -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- Fuente más fina y sutil (Inter) e iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Fondo Aurora moderno */
+            background: linear-gradient(135deg, #e0f2fe 0%, #fce7f3 50%, #fef3c7 100%);
+            min-height: 100vh;
+        }
+        /* Ocultar barra de desplazamiento en modal pero permitir scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Diccionario exacto de colores por fecha
+        const colorDictionary = {
+            // Septiembre
+            '2026-09-15': '#3B82F6', '2026-09-28': '#3B82F6',
+            '2026-09-16': '#10B981', '2026-09-29': '#10B981',
+            '2026-09-17': '#F59E0B', '2026-09-30': '#F59E0B',
+            '2026-09-18': '#8B5CF6',
+            '2026-09-21': '#F97316',
+            '2026-09-22': '#14B8A6',
+            '2026-09-23': '#6366F1',
+            '2026-09-24': '#F43F5E',
+            '2026-09-25': '#06B6D4',
+            // Octubre
+            '2026-10-13': '#3B82F6', '2026-10-26': '#3B82F6',
+            '2026-10-14': '#10B981', '2026-10-27': '#10B981',
+            '2026-10-15': '#F59E0B', '2026-10-28': '#F59E0B',
+            '2026-10-01': '#8B5CF6', '2026-10-16': '#8B5CF6', '2026-10-29': '#8B5CF6',
+            '2026-10-02': '#F97316', '2026-10-19': '#F97316',
+            '2026-10-06': '#14B8A6', '2026-10-20': '#14B8A6',
+            '2026-10-07': '#6366F1', '2026-10-21': '#6366F1',
+            '2026-10-08': '#F43F5E', '2026-10-22': '#F43F5E',
+            '2026-10-09': '#06B6D4', '2026-10-23': '#06B6D4',
+            // Noviembre
+            '2026-11-10': '#3B82F6', '2026-11-23': '#3B82F6',
+            '2026-11-11': '#10B981', '2026-11-24': '#10B981',
+            '2026-11-12': '#F59E0B', '2026-11-25': '#F59E0B',
+            '2026-11-13': '#8B5CF6', '2026-11-26': '#8B5CF6',
+            '2026-11-03': '#F97316', '2026-11-16': '#F97316', '2026-11-27': '#F97316',
+            '2026-11-04': '#14B8A6', '2026-11-17': '#14B8A6', '2026-11-30': '#14B8A6',
+            '2026-11-05': '#6366F1', '2026-11-18': '#6366F1',
+            '2026-11-06': '#F43F5E', '2026-11-19': '#F43F5E',
+            '2026-11-09': '#06B6D4', '2026-11-20': '#06B6D4',
+            // Diciembre
+            '2026-12-04': '#3B82F6', '2026-12-21': '#3B82F6',
+            '2026-12-09': '#10B981', '2026-12-22': '#10B981',
+            '2026-12-10': '#F59E0B',
+            '2026-12-11': '#8B5CF6',
+            '2026-12-14': '#F97316',
+            '2026-12-15': '#14B8A6',
+            '2026-12-01': '#6366F1', '2026-12-16': '#6366F1',
+            '2026-12-02': '#F43F5E', '2026-12-17': '#F43F5E',
+            '2026-12-03': '#06B6D4', '2026-12-18': '#06B6D4',
+            // Enero
+            '2027-01-20': '#3B82F6',
+            '2027-01-21': '#10B981',
+            '2027-01-11': '#F59E0B', '2027-01-22': '#F59E0B',
+            '2027-01-12': '#8B5CF6', '2027-01-25': '#8B5CF6',
+            '2027-01-13': '#F97316', '2027-01-26': '#F97316',
+            '2027-01-14': '#14B8A6', '2027-01-27': '#14B8A6',
+            '2027-01-15': '#6366F1', '2027-01-28': '#6366F1',
+            '2027-01-18': '#F43F5E', '2027-01-29': '#F43F5E',
+            '2027-01-19': '#06B6D4',
+            // Febrero
+            '2027-02-02': '#3B82F6', '2027-02-17': '#3B82F6',
+            '2027-02-03': '#10B981', '2027-02-18': '#10B981',
+            '2027-02-04': '#F59E0B', '2027-02-19': '#F59E0B',
+            '2027-02-05': '#8B5CF6', '2027-02-22': '#8B5CF6',
+            '2027-02-10': '#F97316', '2027-02-23': '#F97316',
+            '2027-02-11': '#14B8A6', '2027-02-24': '#14B8A6',
+            '2027-02-12': '#6366F1', '2027-02-25': '#6366F1',
+            '2027-02-15': '#F43F5E', '2027-02-26': '#F43F5E',
+            '2027-02-01': '#06B6D4', '2027-02-16': '#06B6D4',
+            // Marzo
+            '2027-03-02': '#3B82F6', '2027-03-15': '#3B82F6',
+            '2027-03-03': '#10B981', '2027-03-16': '#10B981',
+            '2027-03-04': '#F59E0B', '2027-03-17': '#F59E0B',
+            '2027-03-05': '#8B5CF6', '2027-03-18': '#8B5CF6',
+            '2027-03-08': '#F97316', '2027-03-19': '#F97316',
+            '2027-03-09': '#14B8A6', '2027-03-31': '#14B8A6',
+            '2027-03-10': '#6366F1',
+            '2027-03-11': '#F43F5E',
+            '2027-03-01': '#06B6D4', '2027-03-12': '#06B6D4',
+            // Abril
+            '2027-04-06': '#3B82F6', '2027-04-19': '#3B82F6',
+            '2027-04-07': '#10B981', '2027-04-20': '#10B981',
+            '2027-04-08': '#F59E0B', '2027-04-21': '#F59E0B',
+            '2027-04-09': '#8B5CF6', '2027-04-22': '#8B5CF6',
+            '2027-04-12': '#F97316', '2027-04-26': '#F97316',
+            '2027-04-13': '#14B8A6', '2027-04-27': '#14B8A6',
+            '2027-04-01': '#6366F1', '2027-04-14': '#6366F1', '2027-04-28': '#6366F1',
+            '2027-04-02': '#F43F5E', '2027-04-15': '#F43F5E', '2027-04-29': '#F43F5E',
+            '2027-04-05': '#06B6D4', '2027-04-16': '#06B6D4', '2027-04-30': '#06B6D4',
+            // Mayo
+            '2027-05-03': '#3B82F6', '2027-05-14': '#3B82F6',
+            '2027-05-04': '#10B981', '2027-05-17': '#10B981', '2027-05-27': '#10B981',
+            '2027-05-05': '#F59E0B', '2027-05-18': '#F59E0B',
+            '2027-05-06': '#8B5CF6', '2027-05-19': '#8B5CF6',
+            '2027-05-07': '#F97316', '2027-05-20': '#F97316', '2027-05-28': '#F97316',
+            '2027-05-10': '#14B8A6', '2027-05-21': '#14B8A6',
+            '2027-05-11': '#6366F1', '2027-05-24': '#6366F1', '2027-05-31': '#6366F1',
+            '2027-05-12': '#F43F5E', '2027-05-25': '#F43F5E',
+            '2027-05-13': '#06B6D4', '2027-05-26': '#06B6D4',
+            // Junio
+            '2027-06-01': '#84CC16', '2027-06-02': '#84CC16', '2027-06-03': '#84CC16', '2027-06-04': '#84CC16',
+            '2027-06-07': '#84CC16', '2027-06-08': '#84CC16', '2027-06-09': '#84CC16', '2027-06-10': '#84CC16', '2027-06-11': '#84CC16',
+            '2027-06-14': '#84CC16', '2027-06-15': '#84CC16', '2027-06-16': '#84CC16', '2027-06-17': '#84CC16', '2027-06-18': '#84CC16',
+            '2027-06-21': '#84CC16', '2027-06-22': '#84CC16', '2027-06-23': '#84CC16',
+        };
+
+        // Cada mes se compone exactamente de 35 huecos (5 filas x 7 columnas) para igualar alturas
+        const blocksData = [
+            {
+                name: "SEPTIEMBRE 2026",
+                days: [
+                    // Fila 1 y 2 en blanco
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    // Filas 3, 4 y 5
+                    null, {d:15,m:9,y:2026}, {d:16,m:9,y:2026}, {d:17,m:9,y:2026}, {d:18,m:9,y:2026}, {d:19,m:9,y:2026}, {d:20,m:9,y:2026},
+                    {d:21,m:9,y:2026}, {d:22,m:9,y:2026}, {d:23,m:9,y:2026}, {d:24,m:9,y:2026}, {d:25,m:9,y:2026}, {d:26,m:9,y:2026}, {d:27,m:9,y:2026},
+                    {d:28,m:9,y:2026}, {d:29,m:9,y:2026}, {d:30,m:9,y:2026}, {d:1,m:10,y:2026}, {d:2,m:10,y:2026}, {d:3,m:10,y:2026}, {d:4,m:10,y:2026}
+                ]
+            },
+            {
+                name: "OCTUBRE 2026",
+                days: [
+                    // Fila 1 en blanco
+                    null, null, null, null, null, null, null,
+                    // Filas 2, 3, 4 y 5
+                    {d:5,m:10,y:2026}, {d:6,m:10,y:2026}, {d:7,m:10,y:2026}, {d:8,m:10,y:2026}, {d:9,m:10,y:2026}, {d:10,m:10,y:2026}, {d:11,m:10,y:2026},
+                    {d:12,m:10,y:2026}, {d:13,m:10,y:2026}, {d:14,m:10,y:2026}, {d:15,m:10,y:2026}, {d:16,m:10,y:2026}, {d:17,m:10,y:2026}, {d:18,m:10,y:2026},
+                    {d:19,m:10,y:2026}, {d:20,m:10,y:2026}, {d:21,m:10,y:2026}, {d:22,m:10,y:2026}, {d:23,m:10,y:2026}, {d:24,m:10,y:2026}, {d:25,m:10,y:2026},
+                    {d:26,m:10,y:2026}, {d:27,m:10,y:2026}, {d:28,m:10,y:2026}, {d:29,m:10,y:2026}, {d:30,m:10,y:2026}, {d:31,m:10,y:2026}, {d:1,m:11,y:2026}
+                ]
+            },
+            {
+                name: "NOVIEMBRE 2026",
+                days: [
+                    // Fila 1 en blanco
+                    null, null, null, null, null, null, null,
+                    // Filas 2, 3, 4 y 5
+                    {d:2,m:11,y:2026}, {d:3,m:11,y:2026}, {d:4,m:11,y:2026}, {d:5,m:11,y:2026}, {d:6,m:11,y:2026}, {d:7,m:11,y:2026}, {d:8,m:11,y:2026},
+                    {d:9,m:11,y:2026}, {d:10,m:11,y:2026}, {d:11,m:11,y:2026}, {d:12,m:11,y:2026}, {d:13,m:11,y:2026}, {d:14,m:11,y:2026}, {d:15,m:11,y:2026},
+                    {d:16,m:11,y:2026}, {d:17,m:11,y:2026}, {d:18,m:11,y:2026}, {d:19,m:11,y:2026}, {d:20,m:11,y:2026}, {d:21,m:11,y:2026}, {d:22,m:11,y:2026},
+                    {d:23,m:11,y:2026}, {d:24,m:11,y:2026}, {d:25,m:11,y:2026}, {d:26,m:11,y:2026}, {d:27,m:11,y:2026}, {d:28,m:11,y:2026}, {d:29,m:11,y:2026}
+                ]
+            },
+            {
+                name: "DICIEMBRE 2026",
+                days: [
+                    // Todas las filas completas
+                    {d:30,m:11,y:2026}, {d:1,m:12,y:2026}, {d:2,m:12,y:2026}, {d:3,m:12,y:2026}, {d:4,m:12,y:2026}, {d:5,m:12,y:2026}, {d:6,m:12,y:2026},
+                    {d:7,m:12,y:2026}, {d:8,m:12,y:2026}, {d:9,m:12,y:2026}, {d:10,m:12,y:2026}, {d:11,m:12,y:2026}, {d:12,m:12,y:2026}, {d:13,m:12,y:2026},
+                    {d:14,m:12,y:2026}, {d:15,m:12,y:2026}, {d:16,m:12,y:2026}, {d:17,m:12,y:2026}, {d:18,m:12,y:2026}, {d:19,m:12,y:2026}, {d:20,m:12,y:2026},
+                    {d:21,m:12,y:2026}, {d:22,m:12,y:2026}, {d:23,m:12,y:2026}, {d:24,m:12,y:2026}, {d:25,m:12,y:2026}, {d:26,m:12,y:2026}, {d:27,m:12,y:2026},
+                    {d:28,m:12,y:2026}, {d:29,m:12,y:2026}, {d:30,m:12,y:2026}, {d:31,m:12,y:2026}, {d:1,m:1,y:2027}, {d:2,m:1,y:2027}, {d:3,m:1,y:2027}
+                ]
+            },
+            {
+                name: "ENERO 2027",
+                days: [
+                    // Fila 1 en blanco
+                    null, null, null, null, null, null, null,
+                    // Filas 2, 3, 4 y 5
+                    {d:4,m:1,y:2027}, {d:5,m:1,y:2027}, {d:6,m:1,y:2027}, {d:7,m:1,y:2027}, {d:8,m:1,y:2027}, {d:9,m:1,y:2027}, {d:10,m:1,y:2027},
+                    {d:11,m:1,y:2027}, {d:12,m:1,y:2027}, {d:13,m:1,y:2027}, {d:14,m:1,y:2027}, {d:15,m:1,y:2027}, {d:16,m:1,y:2027}, {d:17,m:1,y:2027},
+                    {d:18,m:1,y:2027}, {d:19,m:1,y:2027}, {d:20,m:1,y:2027}, {d:21,m:1,y:2027}, {d:22,m:1,y:2027}, {d:23,m:1,y:2027}, {d:24,m:1,y:2027},
+                    {d:25,m:1,y:2027}, {d:26,m:1,y:2027}, {d:27,m:1,y:2027}, {d:28,m:1,y:2027}, {d:29,m:1,y:2027}, {d:30,m:1,y:2027}, {d:31,m:1,y:2027}
+                ]
+            },
+            {
+                name: "FEBRERO 2027",
+                days: [
+                    // Filas 1, 2, 3 y 4 completas
+                    {d:1,m:2,y:2027}, {d:2,m:2,y:2027}, {d:3,m:2,y:2027}, {d:4,m:2,y:2027}, {d:5,m:2,y:2027}, {d:6,m:2,y:2027}, {d:7,m:2,y:2027},
+                    {d:8,m:2,y:2027}, {d:9,m:2,y:2027}, {d:10,m:2,y:2027}, {d:11,m:2,y:2027}, {d:12,m:2,y:2027}, {d:13,m:2,y:2027}, {d:14,m:2,y:2027},
+                    {d:15,m:2,y:2027}, {d:16,m:2,y:2027}, {d:17,m:2,y:2027}, {d:18,m:2,y:2027}, {d:19,m:2,y:2027}, {d:20,m:2,y:2027}, {d:21,m:2,y:2027},
+                    {d:22,m:2,y:2027}, {d:23,m:2,y:2027}, {d:24,m:2,y:2027}, {d:25,m:2,y:2027}, {d:26,m:2,y:2027}, {d:27,m:2,y:2027}, {d:28,m:2,y:2027},
+                    // Fila 5 en blanco
+                    null, null, null, null, null, null, null
+                ]
+            },
+            {
+                name: "MARZO 2027",
+                days: [
+                    // Todas las filas completas
+                    {d:1,m:3,y:2027}, {d:2,m:3,y:2027}, {d:3,m:3,y:2027}, {d:4,m:3,y:2027}, {d:5,m:3,y:2027}, {d:6,m:3,y:2027}, {d:7,m:3,y:2027},
+                    {d:8,m:3,y:2027}, {d:9,m:3,y:2027}, {d:10,m:3,y:2027}, {d:11,m:3,y:2027}, {d:12,m:3,y:2027}, {d:13,m:3,y:2027}, {d:14,m:3,y:2027},
+                    {d:15,m:3,y:2027}, {d:16,m:3,y:2027}, {d:17,m:3,y:2027}, {d:18,m:3,y:2027}, {d:19,m:3,y:2027}, {d:20,m:3,y:2027}, {d:21,m:3,y:2027},
+                    {d:22,m:3,y:2027}, {d:23,m:3,y:2027}, {d:24,m:3,y:2027}, {d:25,m:3,y:2027}, {d:26,m:3,y:2027}, {d:27,m:3,y:2027}, {d:28,m:3,y:2027},
+                    {d:29,m:3,y:2027}, {d:30,m:3,y:2027}, {d:31,m:3,y:2027}, {d:1,m:4,y:2027}, {d:2,m:4,y:2027}, {d:3,m:4,y:2027}, {d:4,m:4,y:2027}
+                ]
+            },
+            {
+                name: "ABRIL 2027",
+                days: [
+                    // Fila 1 en blanco (para igualar el tamaño 5x7 al resto)
+                    null, null, null, null, null, null, null,
+                    // Filas 2, 3, 4 y 5
+                    {d:5,m:4,y:2027}, {d:6,m:4,y:2027}, {d:7,m:4,y:2027}, {d:8,m:4,y:2027}, {d:9,m:4,y:2027}, {d:10,m:4,y:2027}, {d:11,m:4,y:2027},
+                    {d:12,m:4,y:2027}, {d:13,m:4,y:2027}, {d:14,m:4,y:2027}, {d:15,m:4,y:2027}, {d:16,m:4,y:2027}, {d:17,m:4,y:2027}, {d:18,m:4,y:2027},
+                    {d:19,m:4,y:2027}, {d:20,m:4,y:2027}, {d:21,m:4,y:2027}, {d:22,m:4,y:2027}, {d:23,m:4,y:2027}, {d:24,m:4,y:2027}, {d:25,m:4,y:2027},
+                    {d:26,m:4,y:2027}, {d:27,m:4,y:2027}, {d:28,m:4,y:2027}, {d:29,m:4,y:2027}, {d:30,m:4,y:2027}, {d:1,m:5,y:2027}, {d:2,m:5,y:2027}
+                ]
+            },
+            {
+                name: "MAYO 2027",
+                days: [
+                    // Fila 1 en blanco
+                    null, null, null, null, null, null, null,
+                    // Filas 2, 3, 4 y 5
+                    {d:3,m:5,y:2027}, {d:4,m:5,y:2027}, {d:5,m:5,y:2027}, {d:6,m:5,y:2027}, {d:7,m:5,y:2027}, {d:8,m:5,y:2027}, {d:9,m:5,y:2027},
+                    {d:10,m:5,y:2027}, {d:11,m:5,y:2027}, {d:12,m:5,y:2027}, {d:13,m:5,y:2027}, {d:14,m:5,y:2027}, {d:15,m:5,y:2027}, {d:16,m:5,y:2027},
+                    {d:17,m:5,y:2027}, {d:18,m:5,y:2027}, {d:19,m:5,y:2027}, {d:20,m:5,y:2027}, {d:21,m:5,y:2027}, {d:22,m:5,y:2027}, {d:23,m:5,y:2027},
+                    {d:24,m:5,y:2027}, {d:25,m:5,y:2027}, {d:26,m:5,y:2027}, {d:27,m:5,y:2027}, {d:28,m:5,y:2027}, {d:29,m:5,y:2027}, {d:30,m:5,y:2027}
+                ]
+            },
+            {
+                name: "JUNIO 2027",
+                days: [
+                    // Filas 1, 2, 3 y 4 (termina el 23)
+                    {d:31,m:5,y:2027}, {d:1,m:6,y:2027}, {d:2,m:6,y:2027}, {d:3,m:6,y:2027}, {d:4,m:6,y:2027}, {d:5,m:6,y:2027}, {d:6,m:6,y:2027},
+                    {d:7,m:6,y:2027}, {d:8,m:6,y:2027}, {d:9,m:6,y:2027}, {d:10,m:6,y:2027}, {d:11,m:6,y:2027}, {d:12,m:6,y:2027}, {d:13,m:6,y:2027},
+                    {d:14,m:6,y:2027}, {d:15,m:6,y:2027}, {d:16,m:6,y:2027}, {d:17,m:6,y:2027}, {d:18,m:6,y:2027}, {d:19,m:6,y:2027}, {d:20,m:6,y:2027},
+                    {d:21,m:6,y:2027}, {d:22,m:6,y:2027}, {d:23,m:6,y:2027}, null, null, null, null,
+                    // Fila 5 en blanco
+                    null, null, null, null, null, null, null
+                ]
+            }
+        ];
+
+        const pad = (num) => num.toString().padStart(2, '0');
+        
+        // Formateador visual (e.j. "Martes 15 de septiembre de 2026")
+        const formatDescriptiveDate = (dateString) => {
+            if (!dateString) return "";
+            const [y, m, d] = dateString.split('-');
+            const dateObj = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            let formatted = dateObj.toLocaleDateString('es-ES', options);
+            return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+        };
+
+        // Genera URL formato "AAMMDD.png"
+        const getImageUrl = (dateStr) => {
+            const [year, month, day] = dateStr.split('-');
+            const shortYear = year.slice(-2);
+            return `https://francdj007.github.io/cole/ArtesanosDePaz/img/${shortYear}${pad(month)}${pad(day)}.png`;
+        };
+
+        // Diccionario de enlaces generado con tu listado
+        const linksData = {
+            '2026-09-15': [{ text: "Mahatma Gandhi", url: "https://es.wikipedia.org/wiki/Mahatma_Gandhi" }],
+            '2026-09-28': [{ text: "Dorothy Thompson", url: "https://es.wikipedia.org/wiki/Dorothy_Thompson" }],
+            '2026-10-13': [{ text: "Nelson Mandela", url: "https://es.wikipedia.org/wiki/Nelson_Mandela" }],
+            '2026-10-26': [{ text: "Juan Pablo II", url: "https://es.wikipedia.org/wiki/Juan_Pablo_II" }],
+            '2026-11-10': [{ text: "Madre Teresa de Calcuta", url: "https://es.wikipedia.org/wiki/Teresa_de_Calcuta" }],
+            '2026-12-04': [{ text: "Ralph Waldo Emerson", url: "https://es.wikipedia.org/wiki/Ralph_Waldo_Emerson" }],
+            '2026-12-21': [{ text: "Confucio", url: "https://es.wikipedia.org/wiki/Confucio" }],
+            '2027-02-02': [{ text: "Eleanor Roosevelt", url: "https://es.wikipedia.org/wiki/Eleanor_Roosevelt" }],
+            '2027-02-17': [{ text: "Marco Aurelio", url: "https://es.wikipedia.org/wiki/Marco_Aurelio" }],
+            '2027-03-15': [{ text: "Lao Tzu", url: "https://es.wikipedia.org/wiki/Lao-Tse" }],
+            '2027-04-06': [{ text: "Thich Nhat Hanh", url: "https://es.wikipedia.org/wiki/Th%C3%ADch_Nh%E1%BA%A5t_H%E1%BA%A1nh" }],
+            '2027-05-03': [{ text: "Bruce Lee", url: "https://es.wikipedia.org/wiki/Bruce_Lee" }],
+            '2027-05-14': [{ text: "Epictetus", url: "https://es.wikipedia.org/wiki/Epicteto" }],
+            
+            // Día con 2 enlaces
+            '2026-09-16': [
+                { text: "Harper Lee", url: "https://es.wikipedia.org/wiki/Harper_Lee" },
+                { text: "(Matar a un ruiseñor)", url: "https://es.wikipedia.org/wiki/Matar_un_ruise%C3%B1or" }
+            ],
+            
+            '2026-10-14': [{ text: "Albert Einstein", url: "https://es.wikipedia.org/wiki/Albert_Einstein" }],
+            '2026-10-27': [{ text: "Jane Addams", url: "https://es.wikipedia.org/wiki/Jane_Addams" }],
+            '2026-11-24': [{ text: "Maya Angelou", url: "https://es.wikipedia.org/wiki/Maya_Angelou" }],
+            '2026-12-09': [{ text: "Carl Rogers", url: "https://es.wikipedia.org/wiki/Carl_Rogers" }],
+            
+            // Día con 2 enlaces
+            '2027-01-21': [
+                { text: "J.K. Rowling", url: "https://es.wikipedia.org/wiki/J._K._Rowling" },
+                { text: "(Albus Dumbledore)", url: "https://es.wikipedia.org/wiki/Albus_Dumbledore" }
+            ],
+            
+            '2027-02-03': [{ text: "Jimi Hendrix", url: "https://es.wikipedia.org/wiki/Jimi_Hendrix" }],
+            '2027-02-18': [{ text: "Malala Yousafzai", url: "https://es.wikipedia.org/wiki/Malala_Yousafzai" }],
+            '2027-03-03': [{ text: "Martin Luther King Jr.", url: "https://es.wikipedia.org/wiki/Martin_Luther_King" }],
+            '2027-04-20': [{ text: "Desmond Tutu", url: "https://es.wikipedia.org/wiki/Desmond_Tutu" }],
+            '2027-05-04': [{ text: "Madre Teresa de Calcuta", url: "https://es.wikipedia.org/wiki/Teresa_de_Calcuta" }],
+            '2026-09-17': [{ text: "Rigoberta Menchú", url: "https://es.wikipedia.org/wiki/Rigoberta_Mench%C3%BA" }],
+            '2026-09-30': [{ text: "Rosa Parks", url: "https://es.wikipedia.org/wiki/Rosa_Parks" }],
+            '2026-10-15': [{ text: "Martin Luther King Jr.", url: "https://es.wikipedia.org/wiki/Martin_Luther_King" }],
+            '2026-10-28': [{ text: "Malala Yousafzai", url: "https://es.wikipedia.org/wiki/Malala_Yousafzai" }],
+            '2026-11-12': [{ text: "Ana Frank", url: "https://es.wikipedia.org/wiki/Ana_Frank" }],
+            '2026-11-25': [{ text: "Nelson Mandela", url: "https://es.wikipedia.org/wiki/Nelson_Mandela" }],
+            '2026-12-10': [{ text: "Mahatma Gandhi", url: "https://es.wikipedia.org/wiki/Mahatma_Gandhi" }],
+            '2027-01-11': [{ text: "Desmond Tutu", url: "https://es.wikipedia.org/wiki/Desmond_Tutu" }],
+            '2027-01-22': [{ text: "Wangari Maathai", url: "https://es.wikipedia.org/wiki/Wangari_Maathai" }],
+            '2027-02-04': [{ text: "Iqbal Masih", url: "https://es.wikipedia.org/wiki/Iqbal_Masih" }],
+            '2027-02-19': [{ text: "Albert Einstein", url: "https://es.wikipedia.org/wiki/Albert_Einstein" }],
+            '2027-03-04': [{ text: "Oscar Arias Sánchez", url: "https://es.wikipedia.org/wiki/%C3%93scar_Arias_S%C3%A1nchez" }],
+            '2027-03-17': [{ text: "Madre Teresa de Calcuta", url: "https://es.wikipedia.org/wiki/Teresa_de_Calcuta" }],
+            '2027-04-08': [{ text: "Helen Keller", url: "https://es.wikipedia.org/wiki/Helen_Keller" }],
+            '2027-04-21': [{ text: "John Lennon", url: "https://es.wikipedia.org/wiki/John_Lennon" }],
+            '2027-05-05': [{ text: "Elie Wiesel", url: "https://es.wikipedia.org/wiki/Elie_Wiesel" }],
+            '2027-05-18': [{ text: "Sadako Sasaki", url: "https://es.wikipedia.org/wiki/Sadako_Sasaki" }],
+            '2026-10-20': [{ text: "Terry Pratchett", url: "https://es.wikipedia.org/wiki/Terry_Pratchett" }],
+            '2027-01-25': [{ text: "Steven Furtick", url: "https://es.wikipedia.org/wiki/Steven_Furtick" }],
+            '2027-04-09': [{ text: "Edmund Burke", url: "https://es.wikipedia.org/wiki/Edmund_Burke" }],
+            '2027-04-22': [{ text: "Christian Lous Lange", url: "https://es.wikipedia.org/wiki/Christian_Lange" }],
+            '2026-09-21': [{ text: "Buda", url: "https://es.wikipedia.org/wiki/Buda_Gautama" }],
+            '2026-11-03': [{ text: "Josh Billings", url: "https://en.wikipedia.org/wiki/Josh_Billings" }],
+            '2027-02-23': [{ text: "Zenón de Citio", url: "https://es.wikipedia.org/wiki/Zen%C3%B3n_de_Citio" }],
+            '2027-05-20': [{ text: "Martin Luther King Jr.", url: "https://es.wikipedia.org/wiki/Martin_Luther_King" }],
+            '2026-09-22': [{ text: "Isaac Newton", url: "https://es.wikipedia.org/wiki/Isaac_Newton" }],
+            '2026-10-06': [{ text: "Max Lucado", url: "https://es.wikipedia.org/wiki/Max_Lucado" }],
+            '2026-11-17': [{ text: "Mark Twain", url: "https://es.wikipedia.org/wiki/Mark_Twain" }],
+            '2027-02-11': [{ text: "Malachy McCourt", url: "https://en.wikipedia.org/wiki/Malachy_McCourt" }],
+            '2027-04-13': [{ text: "Confucio", url: "https://es.wikipedia.org/wiki/Confucio" }],
+            '2026-09-23': [{ text: "Herman Melville", url: "https://es.wikipedia.org/wiki/Herman_Melville" }],
+            '2026-10-07': [{ text: "Eleanor Roosevelt", url: "https://es.wikipedia.org/wiki/Eleanor_Roosevelt" }],
+            '2026-10-21': [{ text: "Warsan Shire", url: "https://es.wikipedia.org/wiki/Warsan_Shire" }],
+            '2026-11-05': [{ text: "Jane Goodall", url: "https://es.wikipedia.org/wiki/Jane_Goodall" }],
+            '2026-12-01': [{ text: "Eduardo Galeano", url: "https://es.wikipedia.org/wiki/Eduardo_Galeano" }],
+            '2027-01-15': [{ text: "Albert Einstein", url: "https://es.wikipedia.org/wiki/Albert_Einstein" }],
+            '2027-01-28': [{ text: "Nelson Mandela", url: "https://es.wikipedia.org/wiki/Nelson_Mandela" }],
+            '2027-02-12': [{ text: "Maya Angelou", url: "https://es.wikipedia.org/wiki/Maya_Angelou" }],
+            '2027-03-10': [{ text: "Albert Einstein", url: "https://es.wikipedia.org/wiki/Albert_Einstein" }],
+            '2027-04-14': [{ text: "Anna Lappé", url: "https://en.wikipedia.org/wiki/Anna_Lapp%C3%A9" }],
+            '2027-05-24': [{ text: "Dave Ramsey", url: "https://en.wikipedia.org/wiki/Dave_Ramsey" }],
+            '2026-09-24': [{ text: "Michael Jordan", url: "https://es.wikipedia.org/wiki/Michael_Jordan" }],
+            '2026-10-08': [{ text: "Thomas Edison", url: "https://es.wikipedia.org/wiki/Thomas_Alva_Edison" }],
+            
+            // Día con 2 enlaces
+            '2026-10-22': [
+                { text: "Jean-Jacques Rousseau", url: "https://es.wikipedia.org/wiki/Jean-Jacques_Rousseau" },
+                { text: "Katherine Johnson", url: "https://es.wikipedia.org/wiki/Katherine_Johnson" }
+            ],
+            
+            '2026-11-19': [{ text: "J.K. Rowling", url: "https://es.wikipedia.org/wiki/J._K._Rowling" }],
+            '2026-12-02': [{ text: "Heywood Broun", url: "https://es.wikipedia.org/wiki/Heywood_Hale_Broun" }],
+            '2027-02-15': [{ text: "Robert Louis Stevenson", url: "https://es.wikipedia.org/wiki/Robert_Louis_Stevenson" }],
+            '2027-02-25': [{ text: "Louise Hay", url: "https://es.wikipedia.org/wiki/Louise_Hay" }],
+            '2027-04-02': [{ text: "Jackson Brown", url: "https://en.wikipedia.org/wiki/Jackson_Browne" }],
+            '2027-04-29': [{ text: "Reinhold Niebuhr", url: "https://es.wikipedia.org/wiki/Reinhold_Niebuhr" }],
+            '2027-05-25': [{ text: "Ernest Hemingway", url: "https://es.wikipedia.org/wiki/Ernest_Hemingway" }],
+            '2026-09-25': [{ text: "Stephen Hawking", url: "https://es.wikipedia.org/wiki/Stephen_Hawking" }],
+            '2026-10-09': [{ text: "Simone Biles", url: "https://es.wikipedia.org/wiki/Simone_Biles" }],
+            '2026-11-09': [{ text: "Rafa Nadal", url: "https://es.wikipedia.org/wiki/Rafael_Nadal" }],
+            '2026-11-20': [{ text: "Marie Curie", url: "https://es.wikipedia.org/wiki/Marie_Curie" }],
+            '2026-12-03': [{ text: "Lionel Messi", url: "https://es.wikipedia.org/wiki/Lionel_Messi" }],
+            '2026-12-18': [{ text: "Louis Pasteur", url: "https://es.wikipedia.org/wiki/Louis_Pasteur" }],
+            '2027-01-19': [{ text: "Bethany Hamilton", url: "https://es.wikipedia.org/wiki/Bethany_Hamilton" }],
+            '2027-02-01': [{ text: "Alan Turing", url: "https://es.wikipedia.org/wiki/Alan_Turing" }],
+            '2027-03-01': [{ text: "Teresa Perales", url: "https://es.wikipedia.org/wiki/Teresa_Perales" }],
+            '2027-03-12': [{ text: "Tu Youyou", url: "https://es.wikipedia.org/wiki/Tu_Youyou" }],
+            '2027-04-05': [{ text: "Ricky Rubio", url: "https://es.wikipedia.org/wiki/Ricky_Rubio" }],
+            '2027-04-16': [{ text: "Katalin Karikó", url: "https://es.wikipedia.org/wiki/Katalin_Karik%C3%B3" }],
+            '2027-04-30': [{ text: "Albert Einstein", url: "https://es.wikipedia.org/wiki/Albert_Einstein" }],
+            '2027-05-26': [{ text: "Alexia Putellas", url: "https://es.wikipedia.org/wiki/Alexia_Putellas" }],
+            '2027-06-04': [{ text: "Madre Teresa de Calcuta", url: "https://es.wikipedia.org/wiki/Teresa_de_Calcuta" }]
+        };
+
+        const App = () => {
+            const [simulatedDateStr, setSimulatedDateStr] = useState('2026-09-14');
+            const [selectedDate, setSelectedDate] = useState(null);
+            const [isModalOpen, setIsModalOpen] = useState(false);
+
+            const handleDateChange = (e) => {
+                setSimulatedDateStr(e.target.value);
+            };
+
+            const handleDayClick = (dateStr, isActive, isRed) => {
+                if (isActive && !isRed) {
+                    setSelectedDate(dateStr);
+                }
+            };
+
+            const simulatedDate = new Date(simulatedDateStr);
+
+            const ThumbnailSpace = () => {
+                const dayLinks = selectedDate ? linksData[selectedDate] : null;
+
+                return (
+                    <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-white/50 p-3 md:p-4 flex flex-col justify-center items-center h-full min-h-[300px]">
+                        {selectedDate ? (
+                            <div className="w-full h-full flex flex-col">
+                                <h3 className="text-center font-semibold text-gray-700 mb-2 border-b border-gray-200 pb-2">
+                                    {formatDescriptiveDate(selectedDate)}
+                                </h3>
+                                <div className="flex-grow w-full rounded-lg overflow-hidden cursor-pointer hover:shadow-xl transition-shadow relative bg-gray-100" onClick={() => setIsModalOpen(true)}>
+                                    <img 
+                                        src={getImageUrl(selectedDate)}
+                                        alt={`Imagen del ${selectedDate}`} 
+                                        className="absolute inset-0 w-full h-full object-contain"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/e2e8f0/475569?text=Imagen+No+Encontrada'; }}
+                                    />
+                                </div>
+                                {/* Sección de Enlaces */}
+                                {dayLinks && dayLinks.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 justify-center mt-3 pt-1">
+                                        {dayLinks.map((link, idx) => (
+                                            <a 
+                                                key={idx} 
+                                                href={link.url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="bg-[#0284C7] hover:bg-[#0369A1] text-white text-sm font-medium py-1.5 px-4 rounded-full shadow-md transition-colors"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {link.text}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center text-gray-400">
+                                <i className="fas fa-image text-5xl mb-3 text-gray-300"></i>
+                                <p className="text-sm font-medium">Haz clic en un día activo para ver su imagen.</p>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const processedBlocks = blocksData.map(block => {
+                const processedDays = block.days.map((dayObj) => {
+                    if (!dayObj) return { isEmpty: true };
+                    
+                    const dateStr = `${dayObj.y}-${pad(dayObj.m)}-${pad(dayObj.d)}`;
+                    const dayDate = new Date(dayObj.y, dayObj.m - 1, dayObj.d);
+                    const isActive = simulatedDate >= dayDate;
+                    
+                    // Comprobar si existe en el diccionario
+                    const assignedColor = colorDictionary[dateStr];
+                    const isRed = !assignedColor; // Si no tiene color asignado y no está vacío, es festivo (rojo)
+
+                    return {
+                        ...dayObj,
+                        dateStr,
+                        isActive,
+                        isRed,
+                        color: assignedColor || null,
+                        isEmpty: false
+                    };
+                });
+                return { ...block, days: processedDays };
+            });
+
+            return (
+                <div className="min-h-screen pb-20 relative">
+                    {/* Cabecera con efecto Glassmorphism */}
+                    <header className="backdrop-blur-md bg-white/40 sticky top-0 z-50 border-b border-white/50 shadow-sm py-4 px-4 sm:px-8 flex justify-between items-center mb-8">
+                        <img 
+                            src="https://francdj007.github.io/cole/ArtesanosDePaz/logos/logoCDJ.png" 
+                            alt="Logo Izquierda" 
+                            className="h-24 md:h-32 object-contain"
+                        />
+                        <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-center flex flex-col md:flex-row gap-2 md:gap-4 drop-shadow-sm">
+                            <span className="flex justify-center">
+                                <span className="text-[#E11D48]">Arte</span>
+                                <span className="text-[#0284C7]">sanos</span>
+                            </span>
+                            <span className="flex justify-center gap-2 md:gap-4">
+                                <span className="text-[#D97706]">de PAZ</span>
+                                <span className="text-[#7C3AED]">día a día</span>
+                            </span>
+                        </h1>
+                        <img 
+                            src="https://francdj007.github.io/cole/ArtesanosDePaz/logos/logoArtesanosPaz.png" 
+                            alt="Logo Derecha" 
+                            className="h-24 md:h-32 object-contain"
+                        />
+                    </header>
+
+                    {}
+                    <main className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
+                        
+                        {/* Espacio destinado: Arriba a la izquierda */}
+                        <div className="col-span-1 md:col-span-2 row-span-1">
+                            <ThumbnailSpace />
+                        </div>
+
+                        {/* Meses del calendario renderizados dinámicamente */}
+                        {processedBlocks.map((block, idx) => (
+                            <div key={idx} className="flex flex-col rounded-lg overflow-hidden bg-white/80 backdrop-blur-sm shadow-xl border border-white/50 self-start">
+                                {/* Título de mes */}
+                                <div className="bg-[#FFFF80] text-center py-2 font-semibold text-gray-800 text-sm md:text-base border-b border-gray-200 tracking-wide">
+                                    {block.name}
+                                </div>
+                                {/* Cabecera días semana */}
+                                <div className="grid grid-cols-7 bg-[#E8B4D9] text-center text-xs md:text-sm text-gray-800 font-semibold py-1">
+                                    <div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div>
+                                </div>
+                                {/* Casillas de los días (5 filas forzadas) */}
+                                <div className="grid grid-cols-7 gap-1 md:gap-2 p-2 bg-transparent text-center font-semibold text-sm md:text-base text-gray-700">
+                                    {block.days.map((d, i) => {
+                                        if (d.isEmpty) {
+                                            return <div key={i} className="aspect-square"></div>;
+                                        }
+
+                                        let dayClasses = "aspect-square flex items-center justify-center transition-all duration-300 rounded-md ";
+                                        let dayStyle = {};
+
+                                        if (d.isRed) {
+                                            // Días festivos (flotan sin recuadro)
+                                            dayClasses += "text-[#F43F5E] bg-transparent";
+                                        } else if (d.isActive) {
+                                            // Días lectivos ACTIVOS (con color y sombra)
+                                            dayClasses += "text-white shadow-md cursor-pointer hover:opacity-90 transform hover:scale-105";
+                                            dayStyle.backgroundColor = d.color;
+                                        } else {
+                                            // Días lectivos FUTUROS (esperando activación)
+                                            dayClasses += "bg-white border border-gray-200 text-gray-800 shadow-sm";
+                                        }
+
+                                        return (
+                                            <div 
+                                                key={i} 
+                                                className={dayClasses}
+                                                style={dayStyle}
+                                                onClick={() => handleDayClick(d.dateStr, d.isActive, d.isRed)}
+                                            >
+                                                {d.d}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </main>
+
+                    {}
+                    <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-200 p-4 flex flex-col md:flex-row justify-center items-center gap-4 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                        <span className="font-semibold text-gray-700 text-sm md:text-base">
+                            <i className="fas fa-calendar-alt mr-2 text-indigo-500"></i>
+                            Simulador de fecha actual:
+                        </span>
+                        <input 
+                            type="date" 
+                            min="2026-09-01" 
+                            max="2027-06-30" 
+                            value={simulatedDateStr} 
+                            onChange={handleDateChange}
+                            className="border border-gray-300 rounded-md px-3 py-1 text-sm md:text-base focus:ring-2 focus:ring-indigo-400 outline-none"
+                        />
+                        <span className="text-xs text-gray-500 max-w-xs text-center md:text-left">
+                            Cambia la fecha para ver cómo se van "iluminando" los colores de los días lectivos al llegar a ellos.
+                        </span>
+                    </div>
+
+                    {}
+                    {isModalOpen && selectedDate && (
+                        <div className="fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-4 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}>
+                            <div className="relative max-w-5xl w-full max-h-[90vh] flex flex-col bg-white rounded-xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+                                    <h3 className="font-bold text-lg md:text-xl text-gray-800">{formatDescriptiveDate(selectedDate)}</h3>
+                                    <button 
+                                        className="text-gray-500 hover:text-red-500 text-2xl w-10 h-10 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors"
+                                        onClick={() => setIsModalOpen(false)}
+                                    >
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div className="flex-1 overflow-auto bg-gray-100 p-4 flex justify-center items-center no-scrollbar">
+                                     <img 
+                                        src={getImageUrl(selectedDate)} 
+                                        alt={`Imagen Grande ${selectedDate}`} 
+                                        className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-md"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/800x600/e2e8f0/475569?text=Imagen+No+Encontrada'; }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
